@@ -32,3 +32,6 @@ uploads/
 # Coverage reports
 htmlcov/
 .coverage
+
+# Vector db
+chroma_db/

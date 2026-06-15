@@ -8,6 +8,7 @@ from datetime import datetime
 from app.db.session import get_db
 from app.models.document import Document
 from app.utils.security import verify_token
+from app.utils.ai_pipeline import chunk_text, create_vector_store
 
 router = APIRouter()
 security = HTTPBearer()
@@ -68,11 +69,15 @@ async def upload_pdf(
     await db.commit()
     await db.refresh(document)
     
+    chunks = chunk_text(extracted_text)
+    create_vector_store(chunks, document.id)
+    
     return {
         "message": "PDF uploaded successfully",
         "document_id": document.id,
         "filename": document.filename,
         "num_pages": num_pages,
         "file_size": file_size,
+        "chunks_created": len(chunks),
         "text_preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
     }

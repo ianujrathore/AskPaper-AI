@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 import fitz
 import os
 from datetime import datetime
@@ -81,3 +83,85 @@ async def upload_pdf(
         "chunks_created": len(chunks),
         "text_preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
     }
+
+
+@router.get("/documents")
+async def list_documents(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    token = credentials.credentials
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user_id = payload.get("user_id")
+    result = await db.execute(
+        select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())
+    )
+    documents = result.scalars().all()
+    
+    return {
+        "documents": [
+            {
+                "id": d.id,
+                "filename": d.filename,
+                "num_pages": d.num_pages,
+                "file_size": d.file_size,
+                "created_at": d.created_at.isoformat()
+            }
+            for d in documents
+        ]
+    }
+
+
+@router.delete("/documents/{document_id}")
+async def delete_document(
+    document_id: int,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    token = credentials.credentials
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user_id = payload.get("user_id")
+    result = await db.execute(
+        select(Document).where(Document.id == document_id, Document.user_id == user_id)
+    )
+    document = result.scalar_one_or_none()
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if os.path.exists(document.file_path):
+        os.remove(document.file_path)
+    
+    await db.delete(document)
+    await db.commit()
+    
+    return {"message": "Document deleted"}
+
+
+@router.get("/documents/{document_id}/file")
+async def get_document_file(
+    document_id: int,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    token = credentials.credentials
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user_id = payload.get("user_id")
+    result = await db.execute(
+        select(Document).where(Document.id == document_id, Document.user_id == user_id)
+    )
+    document = result.scalar_one_or_none()
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return FileResponse(document.file_path, media_type="application/pdf")

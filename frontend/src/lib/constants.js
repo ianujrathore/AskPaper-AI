@@ -1,4 +1,4 @@
-export const APP_NAME = 'AskPaper'
+export const APP_NAME = 'AskPaper AI'
 export const APP_TAGLINE = 'Document Intelligence'
 export const APP_DESCRIPTION = 'Upload PDFs and get answers with source citations.'
 

@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy.orm import declarative_base
 from datetime import datetime
-from app.models.user import Base
+
+Base = declarative_base()
 
 
 class Document(Base):
@@ -12,5 +14,4 @@ class Document(Base):
     extracted_text = Column(Text, nullable=True)
     num_pages = Column(Integer, default=0)
     file_size = Column(Integer, default=0)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

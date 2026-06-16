@@ -1,39 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import FileResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import fitz
 import os
 from datetime import datetime
 
-from app.db.session import get_db
-from app.models.document import Document
-from app.utils.security import verify_token
-from app.utils.ai_pipeline import chunk_text, create_vector_store
+from app.utils.ai_pipeline import chunk_text_with_pages, create_vector_store_with_pages
 
 router = APIRouter()
-security = HTTPBearer()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/upload")
-async def upload_pdf(
-    file: UploadFile = File(...),
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-):
-    token = credentials.credentials
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("user_id")
-    
+async def upload_pdf(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files allowed")
+        return {"error": "Only PDF files allowed"}
     
     content = await file.read()
     file_size = len(content)
@@ -47,121 +29,29 @@ async def upload_pdf(
     
     extracted_text = ""
     num_pages = 0
+    pages_text = []
     
     try:
         pdf_doc = fitz.open(file_path)
         num_pages = pdf_doc.page_count
-        for page in pdf_doc:
-            extracted_text += page.get_text()
+        for i in range(num_pages):
+            page_text = pdf_doc[i].get_text()
+            pages_text.append(page_text)
+            extracted_text += page_text
         pdf_doc.close()
     except Exception:
         os.remove(file_path)
-        raise HTTPException(status_code=400, detail="Invalid PDF file")
+        return {"error": "Invalid PDF file"}
     
-    document = Document(
-        filename=file.filename,
-        file_path=file_path,
-        extracted_text=extracted_text,
-        num_pages=num_pages,
-        file_size=file_size,
-        user_id=user_id
-    )
-    
-    db.add(document)
-    await db.commit()
-    await db.refresh(document)
-    
-    chunks = chunk_text(extracted_text)
-    create_vector_store(chunks, document.id)
+    doc_id = len(os.listdir(UPLOAD_DIR))
+    chunks, page_map = chunk_text_with_pages(extracted_text, pages_text)
+    create_vector_store_with_pages(chunks, page_map, doc_id)
     
     return {
-        "message": "PDF uploaded successfully",
-        "document_id": document.id,
-        "filename": document.filename,
+        "document_id": doc_id,
+        "filename": file.filename,
         "num_pages": num_pages,
         "file_size": file_size,
         "chunks_created": len(chunks),
         "text_preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
     }
-
-
-@router.get("/documents")
-async def list_documents(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-):
-    token = credentials.credentials
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("user_id")
-    result = await db.execute(
-        select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())
-    )
-    documents = result.scalars().all()
-    
-    return {
-        "documents": [
-            {
-                "id": d.id,
-                "filename": d.filename,
-                "num_pages": d.num_pages,
-                "file_size": d.file_size,
-                "created_at": d.created_at.isoformat()
-            }
-            for d in documents
-        ]
-    }
-
-
-@router.delete("/documents/{document_id}")
-async def delete_document(
-    document_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-):
-    token = credentials.credentials
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("user_id")
-    result = await db.execute(
-        select(Document).where(Document.id == document_id, Document.user_id == user_id)
-    )
-    document = result.scalar_one_or_none()
-    
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    
-    if os.path.exists(document.file_path):
-        os.remove(document.file_path)
-    
-    await db.delete(document)
-    await db.commit()
-    
-    return {"message": "Document deleted"}
-
-
-@router.get("/documents/{document_id}/file")
-async def get_document_file(
-    document_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-):
-    token = credentials.credentials
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("user_id")
-    result = await db.execute(
-        select(Document).where(Document.id == document_id, Document.user_id == user_id)
-    )
-    document = result.scalar_one_or_none()
-    
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    
-    return FileResponse(document.file_path, media_type="application/pdf")

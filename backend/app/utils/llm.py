@@ -10,7 +10,7 @@ HEADERS = {
 
 def generate_answer(query: str, context_chunks: list) -> str:
     context = "\n\n".join(context_chunks)
-    
+
     prompt = f"""Answer based ONLY on this context. If answer is not in context, say so.
 
 Context:
@@ -21,12 +21,12 @@ Question: {query}
 Answer:"""
 
     payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 200,
         "temperature": 0.3
     }
-    
+
     try:
         response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=30)
         if response.status_code == 200:

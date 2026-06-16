@@ -1,41 +1,38 @@
-import requests
+from sentence_transformers import SentenceTransformer
 import chromadb
 import os
 
 CHROMA_DIR = "chroma_db"
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
-HF_TOKEN = os.getenv("HF_TOKEN", "")
-EMBEDDING_API = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
-
+model = SentenceTransformer("all-MiniLM-L6-v2")
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
 
 def get_embeddings(texts):
     if isinstance(texts, str):
         texts = [texts]
-    try:
-        response = requests.post(EMBEDDING_API, headers=HEADERS, json={"inputs": texts}, timeout=30)
-        if response.status_code == 200:
-            return response.json()
-    except:
-        pass
-    return []
+    return model.encode(texts).tolist()
 
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100):
+def chunk_text_with_pages(text: str, pages_text: list, chunk_size: int = 500, overlap: int = 100):
     chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunk = text[start:end]
-        chunks.append(chunk)
-        start += (chunk_size - overlap)
-    return chunks
+    page_map = []
+    
+    for page_num, page_text in enumerate(pages_text, start=1):
+        start = 0
+        while start < len(page_text):
+            end = start + chunk_size
+            chunk = page_text[start:end]
+            if chunk.strip():
+                chunks.append(chunk)
+                page_map.append(page_num)
+            start += (chunk_size - overlap)
+    
+    return chunks, page_map
 
 
-def create_vector_store(chunks: list, document_id: int):
+def create_vector_store_with_pages(chunks: list, page_map: list, document_id: int):
     collection_name = f"doc_{document_id}"
     
     existing = [c.name for c in client.list_collections()]
@@ -48,16 +45,22 @@ def create_vector_store(chunks: list, document_id: int):
         return
     
     ids = [f"chunk_{i}" for i in range(len(chunks))]
-    collection.add(ids=ids, embeddings=embeddings_list, documents=chunks)
+    metadatas = [{"page": page_map[i]} for i in range(len(chunks))]
+    collection.add(ids=ids, embeddings=embeddings_list, documents=chunks, metadatas=metadatas)
 
 
-def search_similar_chunks(query: str, document_id: int, top_k: int = 3):
+def search_similar_chunks_with_pages(query: str, document_id: int, top_k: int = 3):
     collection_name = f"doc_{document_id}"
     collection = client.get_collection(name=collection_name)
     
     query_embedding = get_embeddings([query])
     if not query_embedding:
-        return []
+        return [], []
     
     results = collection.query(query_embeddings=query_embedding, n_results=top_k)
-    return results["documents"][0] if results["documents"] else []
+    
+    chunks = results["documents"][0] if results["documents"] else []
+    metadatas = results["metadatas"][0] if results["metadatas"] else []
+    pages = [m["page"] for m in metadatas] if metadatas else []
+    
+    return chunks, pages

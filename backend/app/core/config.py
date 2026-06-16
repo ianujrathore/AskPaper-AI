@@ -5,7 +5,6 @@ class Settings(BaseSettings):
     APP_NAME: str = "AskPaper"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
-    DATABASE_URL: str
     HF_TOKEN: str = ""
 
     class Config:

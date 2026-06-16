@@ -1,13 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.utils.security import verify_token
-from app.utils.ai_pipeline import search_similar_chunks
+from app.utils.ai_pipeline import search_similar_chunks_with_pages
 from app.utils.llm import generate_answer
 
 router = APIRouter()
-security = HTTPBearer()
 
 
 class AskRequest(BaseModel):
@@ -16,24 +13,20 @@ class AskRequest(BaseModel):
 
 
 @router.post("/ask")
-async def ask_question(
-    request: AskRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    chunks = search_similar_chunks(request.question, request.document_id)
+async def ask_question(request: AskRequest):
+    chunks, pages = search_similar_chunks_with_pages(request.question, request.document_id)
     
     if not chunks:
-        raise HTTPException(status_code=404, detail="No relevant content found")
+        return {
+            "question": request.question,
+            "answer": "No relevant content found in this document.",
+            "sources": []
+        }
     
     answer = generate_answer(request.question, chunks)
     
     return {
         "question": request.question,
         "answer": answer,
-        "sources": chunks
+        "sources": [f"Page {p}" for p in pages]
     }

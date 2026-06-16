@@ -131,7 +131,7 @@ function Home() {
         </div>
       </div>
 
-      <div style={{ padding: '10px 16px 16px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ padding: '8px 12px 12px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
         <div style={{ width: '100%', maxWidth: '680px', position: 'relative' }}>
           <form onSubmit={handleAsk}>
             <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)}

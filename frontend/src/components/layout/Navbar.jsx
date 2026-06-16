@@ -24,7 +24,7 @@ function Navbar({ darkMode, setDarkMode, theme, onMenuClick }) {
 
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: theme.text }}>
         <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: theme.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: 700 }}>?</div>
-        <span style={{ fontFamily: "'Lora', serif", fontSize: '14px', fontWeight: 700 }}>{APP_NAME} AI</span>
+        <span style={{ fontFamily: "'Lora', serif", fontSize: '14px', fontWeight: 700 }}>{APP_NAME}</span>
       </Link>
 
       <div style={{ marginLeft: 'auto' }}>

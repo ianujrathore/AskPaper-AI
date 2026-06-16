@@ -100,10 +100,10 @@ function Home() {
               </div>
             </div>
           ) : (
-            <div style={{ width: '100%', maxWidth: '680px', padding: '20px 16px' }}>
+            <div style={{ width: '100%', maxWidth: '680px', padding: '8px 16px 20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {chat.length === 0 && (
-                  <div style={{ textAlign: 'center', paddingTop: '40px' }}>
+                  <div style={{ textAlign: 'center', paddingTop: '16px' }}>
                     <div style={{ fontSize: '32px', marginBottom: '10px' }}>💬</div>
                     <p style={{ color: theme.textSecondary, fontSize: '14px' }}>Ask about <span style={{ color: theme.accent, fontWeight: 600 }}>{docInfo?.filename}</span></p>
                   </div>

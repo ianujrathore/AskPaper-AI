@@ -35,3 +35,6 @@ htmlcov/
 
 # Vector db
 chroma_db/
+
+echo chroma_db/ >> .gitignore
+echo uploads/ >> .gitignoreaskpaper-ai/

@@ -56,7 +56,7 @@ function Home() {
   const newChat = () => { setDocId(null); setDocInfo(null); setChat([]); setFile(null); setSidebarOpen(false) }
 
   return (
-    <div style={{ fontFamily: "'Work Sans', sans-serif", height: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.3s ease' }}>
+    <div style={{ fontFamily: "'Work Sans', sans-serif", height: '100dvh', background: theme.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.3s ease' }}>
       
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} theme={theme} onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
@@ -87,7 +87,7 @@ function Home() {
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', justifyContent: 'center', paddingBottom: '80px' }}>
           {!docId ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
               <div style={{ backgroundColor: theme.cardBg, borderRadius: '18px', border: `1px solid ${theme.border}`, padding: '36px 32px', textAlign: 'center', maxWidth: '380px', width: '100%', boxShadow: darkMode ? '0 2px 24px rgba(0,0,0,0.4)' : '0 1px 12px rgba(0,0,0,0.03)' }}>
@@ -131,7 +131,7 @@ function Home() {
         </div>
       </div>
 
-      <div style={{ padding: '8px 12px 12px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ padding: '8px 12px 12px', display: 'flex', justifyContent: 'center', flexShrink: 0, position: 'sticky', bottom: 0, backgroundColor: theme.bg }}>
         <div style={{ width: '100%', maxWidth: '680px', position: 'relative' }}>
           <form onSubmit={handleAsk}>
             <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)}

@@ -1,42 +1,24 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { APP_NAME } from '../../lib/constants'
 
-function Navbar({ darkMode, setDarkMode, theme, onMenuClick }) {
+function Navbar({ dark, setDark, theme, onMenuClick }) {
   return (
     <div style={{
-      height: '44px', minHeight: '44px',
-      backgroundColor: theme.surface,
-      borderBottom: `1px solid ${theme.border}`,
-      display: 'flex', alignItems: 'center',
-      padding: '0 14px', gap: '8px', flexShrink: 0,
-      transition: 'all 0.3s ease',
+      height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 24px', background: theme.glassBg, backdropFilter: 'blur(24px)',
+      borderBottom: `1px solid ${theme.border}`, flexShrink: 0, zIndex: 10,
     }}>
-      {onMenuClick && (
-        <button onClick={onMenuClick}
-          style={{
-            background: 'none', border: 'none', fontSize: '20px',
-            cursor: 'pointer', color: theme.text, padding: '4px 6px',
-            borderRadius: '6px',
-          }}>
-          ☰
-        </button>
-      )}
-
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: theme.text }}>
-        <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: theme.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: 700 }}>?</div>
-        <span style={{ fontFamily: "'Lora', serif", fontSize: '14px', fontWeight: 700 }}>{APP_NAME}</span>
-      </Link>
-
-      <div style={{ marginLeft: 'auto' }}>
-        <button onClick={() => setDarkMode(!darkMode)}
-          style={{
-            background: theme.sidebarHover, border: `1px solid ${theme.border}`,
-            borderRadius: '8px', padding: '5px 10px', cursor: 'pointer',
-            fontSize: '14px', color: theme.text, transition: 'all 0.2s ease',
-            width: '38px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-          {darkMode ? '☀' : '🌙'}
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {onMenuClick && (
+          <button onClick={onMenuClick} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: theme.text, padding: '4px 8px', borderRadius: 6 }}>☰</button>
+        )}
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ width: 30, height: 30, borderRadius: 9, background: theme.accentGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontWeight: 600, fontSize: 15, color: '#fff' }}>A</div>
+          <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-.01em' }}>{APP_NAME}</span>
+        </Link>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button onClick={() => setDark(!dark)} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: theme.textSecondary, fontSize: 16 }}>{dark ? '☀️' : '🌙'}</button>
       </div>
     </div>
   )

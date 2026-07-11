@@ -1,34 +1,31 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export function useTheme() {
-  const [darkMode, setDarkMode] = useState(() => {
+  const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('askpaper-theme')
     return saved ? saved === 'dark' : true
   })
 
   useEffect(() => {
-    localStorage.setItem('askpaper-theme', darkMode ? 'dark' : 'light')
-  }, [darkMode])
+    localStorage.setItem('askpaper-theme', dark ? 'dark' : 'light')
+    document.body.className = dark ? 'dark' : 'light'
+  }, [dark])
 
-  const theme = {
-    bg: darkMode ? '#0C0E14' : '#FBF7F4',
-    surface: darkMode ? '#161820' : '#FFFFFF',
-    border: darkMode ? 'rgba(255,255,255,0.06)' : '#E5E0DB',
-    text: darkMode ? '#FFFFFF' : '#1E1E24',
-    textSecondary: darkMode ? 'rgba(255,255,255,0.55)' : '#6B6560',
-    textMuted: darkMode ? 'rgba(255,255,255,0.3)' : '#B5B0AA',
-    accent: '#4F8CF7',
-    accentHover: '#6BA3FF',
-    accentLight: darkMode ? 'rgba(79,140,247,0.1)' : 'rgba(79,140,247,0.06)',
-    inputBg: darkMode ? '#1A1D26' : '#FFFFFF',
-    inputBorder: darkMode ? 'rgba(255,255,255,0.1)' : '#D5CFC8',
-    inputFocus: '#4F8CF7',
-    userBubble: darkMode ? '#1E2130' : '#F5F0EB',
-    aiBubble: darkMode ? '#161820' : '#FFFFFF',
-    cardBg: darkMode ? '#161820' : '#FFFFFF',
-    sidebarBg: darkMode ? '#12151C' : '#FFFFFF',
-    sidebarHover: darkMode ? '#1A1D26' : '#F5F0EB',
-  }
+  const theme = useMemo(() => ({
+    bg: dark ? '#08080c' : '#faf9f5',
+    surface: dark ? '#121216' : '#fff',
+    surface2: dark ? '#1a1a20' : '#f4f2ec',
+    surface3: dark ? '#24242c' : '#eae7df',
+    border: dark ? 'rgba(255,255,255,.07)' : 'rgba(20,18,14,.08)',
+    borderStrong: dark ? 'rgba(255,255,255,.13)' : 'rgba(20,18,14,.16)',
+    text: dark ? '#f2f2f4' : '#1b1a16',
+    textSecondary: dark ? '#a1a1a8' : '#58554e',
+    textTertiary: dark ? '#6b6b74' : '#8e8a82',
+    accent: dark ? '#7b6cf6' : '#8b6914',
+    accentWarm: dark ? '#f0a84c' : '#c4a050',
+    accentGradient: dark ? 'linear-gradient(135deg,#7b6cf6,#f0a84c)' : 'linear-gradient(135deg,#8b6914,#c4a050)',
+    glassBg: dark ? 'rgba(18,18,22,.72)' : 'rgba(255,255,255,.78)',
+  }), [dark])
 
-  return { darkMode, setDarkMode, theme }
+  return { dark, setDark, theme }
 }

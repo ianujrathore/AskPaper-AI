@@ -21,7 +21,7 @@ Question: {query}
 Answer:"""
 
     payload = {
-        "model": "llama-3.3-70b-versatile",
+        "model": "gpt-oss-20b",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 200,
         "temperature": 0.3

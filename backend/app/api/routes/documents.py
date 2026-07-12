@@ -11,6 +11,8 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB limit
+
 
 @router.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
@@ -19,6 +21,9 @@ async def upload_pdf(file: UploadFile = File(...)):
     
     content = await file.read()
     file_size = len(content)
+    
+    if file_size > MAX_FILE_SIZE:
+        return {"error": "File too large. Maximum 50MB allowed."}
     
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     safe_filename = f"{timestamp}_{file.filename}"

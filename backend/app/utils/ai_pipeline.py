@@ -5,7 +5,7 @@ import os
 CHROMA_DIR = "chroma_db"
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
 

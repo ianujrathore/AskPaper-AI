@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer
+import requests
 import chromadb
 import os
 

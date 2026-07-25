@@ -1,27 +1,18 @@
-import requests
+from sentence_transformers import SentenceTransformer
 import chromadb
 import os
 
 CHROMA_DIR = "chroma_db"
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-EMBEDDING_API = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
-HEADERS = {"Authorization": f"Bearer {GROQ_API_KEY}"}
-
+model = SentenceTransformer("all-MiniLM-L6-v2")
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
 
 def get_embeddings(texts):
     if isinstance(texts, str):
         texts = [texts]
-    try:
-        response = requests.post(EMBEDDING_API, headers=HEADERS, json={"inputs": texts}, timeout=30)
-        if response.status_code == 200:
-            return response.json()
-    except:
-        pass
-    return []
+    return model.encode(texts).tolist()
 
 
 def chunk_text_with_pages(text, pages_text, chunk_size=500, overlap=100):

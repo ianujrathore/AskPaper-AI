@@ -1,24 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
 from app.api.routes.health import router as health_router
 from app.api.routes.documents import router as documents_router
 from app.api.routes.chat import router as chat_router
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("AskPaper API started")
-    yield
-    print("AskPaper API shutting down")
-
-
 app = FastAPI(
-    title="AskPaper",
+    title="AskPaper-AI",
     description="RAG-based Document Q&A System",
-    version="0.1.0",
-    lifespan=lifespan
+    version="0.1.0"
 )
 
 app.add_middleware(
@@ -38,6 +28,6 @@ app.include_router(chat_router)
 def read_root():
     return {
         "status": "running",
-        "message": "AskPaper is alive!",
+        "message": "AskPaper-AI is alive!",
         "version": "0.1.0"
     }

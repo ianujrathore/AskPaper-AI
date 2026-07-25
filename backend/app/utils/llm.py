@@ -3,12 +3,12 @@ from app.core.config import settings
 
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 HEADERS = {
-    "Authorization": f"Bearer {settings.HF_TOKEN}",
+    "Authorization": f"Bearer {settings.GROQ_API_KEY}",
     "Content-Type": "application/json"
 }
 
 
-def generate_answer(query: str, context_chunks: list) -> str:
+def generate_answer(query, context_chunks):
     context = "\n\n".join(context_chunks)
 
     prompt = f"""Answer based ONLY on this context. If answer is not in context, say so.
@@ -21,7 +21,7 @@ Question: {query}
 Answer:"""
 
     payload = {
-        "model": "gpt-oss-20b",
+        "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 200,
         "temperature": 0.3

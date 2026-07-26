@@ -5,9 +5,9 @@ import os
 CHROMA_DIR = "chroma_db"
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+HF_TOKEN = os.getenv("HF_TOKEN", "")
 EMBEDDING_API = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
-HEADERS = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 
